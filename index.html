@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Nine Men's Morris - Adversarial Search</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══ OVERLAY: MENU ══ -->
+<div class="screen show" id="scr-menu">
+  <div class="modal">
+    <h2>Nine Men's Morris</h2>
+    <p class="modal-sub">Adversarial Search · Minimax & Alpha-Beta Pruning</p>
+    <div class="mode-row">
+      <button class="mode-btn" id="btn-hvai" onclick="clickMode('hvai')">
+        <div class="mode-icons"><span class="mode-icon">👤</span><span class="mode-vs">VS</span><span class="mode-icon">🤖</span></div>
+        <div class="mode-lbl">Human vs AI</div>
+        <div class="mode-sub">Lawan kecerdasan buatan</div>
+      </button>
+      <button class="mode-btn" id="btn-hvh" onclick="clickMode('hvh')">
+        <div class="mode-icons"><span class="mode-icon">👤</span><span class="mode-vs">VS</span><span class="mode-icon">👤</span></div>
+        <div class="mode-lbl">Human vs Human</div>
+        <div class="mode-sub">Bermain berdua</div>
+      </button>
+    </div>
+    <div id="menu-diff-section">
+      <div class="diff-label">Tingkat Kesulitan AI</div>
+      <div class="diff-row">
+        <button class="diff-btn" id="md1" onclick="menuSetDiff(1)">Mudah</button>
+        <button class="diff-btn active" id="md2" onclick="menuSetDiff(2)">Sedang</button>
+        <button class="diff-btn" id="md3" onclick="menuSetDiff(3)">Sulit</button>
+      </div>
+      <div class="diff-desc" id="menu-diff-desc">Minimax depth 2 · Strategi dasar</div>
+    </div>
+    <br>
+    <p id="menu-hint" style="font-size:.73rem;color:var(--accent2);margin-bottom:.4rem;opacity:0;transition:opacity .3s">
+      ⚠ Pilih mode permainan terlebih dahulu!
+    </p>
+    <button class="btn-primary" id="btn-lanjut" onclick="goToHTP()">Lanjut ▶</button>
+  </div>
+</div>
+
+<!-- ══ OVERLAY: HOW TO PLAY ══ -->
+<div class="screen" id="scr-htp">
+  <div class="modal">
+    <h2>Cara Bermain</h2>
+    <p class="modal-sub">Nine Men's Morris — Aturan Dasar</p>
+    <div class="htp-grid">
+      <div class="step"><div class="step-num">1</div><div><b>Penempatan:</b> Tiap pemain bergantian tempatkan 9 pion ke titik kosong.</div></div>
+      <div class="step"><div class="step-num">2</div><div><b>Pergerakan:</b> Geser pion ke titik kosong yang terhubung langsung.</div></div>
+      <div class="step"><div class="step-num">3</div><div><b>Bebas Gerak:</b> Jika tersisa 3 pion, boleh loncat ke titik mana saja.</div></div>
+      <div class="step"><div class="step-num">🔥</div><div><b>Mill:</b> 3 pion sejajar → hapus 1 pion lawan. Pion dalam mill tidak bisa dihapus kecuali terpaksa.</div></div>
+      <div class="step"><div class="step-num">🏆</div><div><b>Menang:</b> Lawan tersisa ≤ 2 pion atau tidak bisa bergerak.</div></div>
+      <div class="step"><div class="step-num">⏱</div><div><b>Seri:</b> Jika keduanya tersisa 3 pion, timer 90 detik berjalan. Habis = seri.</div></div>
+    </div>
+    <div class="win-btns">
+      <button class="btn-sec" onclick="backToMenu()">← Kembali</button>
+      <button class="btn-primary" onclick="startGame()">Mulai Bermain ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OVERLAY: WIN / SERI ══ -->
+<div class="screen" id="scr-win">
+  <div class="modal" style="max-width:340px">
+    <div class="win-icon"  id="win-icon">🏆</div>
+    <div class="win-title" id="win-title">Menang!</div>
+    <div class="win-sub"   id="win-sub"></div>
+    <div class="win-score" id="win-score"></div>
+    <div class="win-btns">
+      <button class="btn-primary" onclick="restartGame()">Main Lagi</button>
+      <button class="btn-sec"     onclick="backToMenu()">Menu Utama</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     GAME LAYOUT
+     Mode HvAI: class="app-body mode-hvai"  → 3 kolom seimbang
+     Mode HvH : class="app-body mode-hvh"   → panel kiri lebih lebar, kanan ramping
+     ══════════════════════════════════════════════════════════ -->
+<div class="app">
+
+  <!-- Header: judul + toolbar -->
+  <div class="app-header">
+    <span class="app-title">Nine Men's Morris</span>
+    <div class="toolbar">
+      <button class="tb-btn" id="btn-mute"    onclick="toggleMute()"     title="Mute">🔊</button>
+      <button class="tb-btn" id="btn-restart" onclick="confirmRestart()" title="Restart">🔄</button>
+      <button class="tb-btn" id="btn-exit"    onclick="backToMenu()"     title="Menu">✕</button>
+    </div>
+  </div>
+
+  <!-- Baris utama — class mode-hvai / mode-hvh ditambah via JS -->
+  <div class="app-body" id="app-body">
+
+    <!-- ────────────────────────────────────────────────────
+         PANEL KIRI
+         HvAI & HvH: pemain, giliran, skor
+         ──────────────────────────────────────────────────── -->
+    <div class="side-panel left-panel" id="left-panel">
+
+      <!-- Pemain -->
+      <div class="box">
+        <div class="box-title">Pemain</div>
+        <div class="pcard" id="card-w">
+          <div class="pdisc white"></div>
+          <div class="pinfo">
+            <div class="pname" id="name-w">Anda</div>
+            <div class="pmeta">Pion Putih · <span id="hw">9</span> tangan</div>
+          </div>
+          <div class="pcnt" id="ob-w">0</div>
+        </div>
+        <div class="pcard" id="card-b">
+          <div class="pdisc black"></div>
+          <div class="pinfo">
+            <div class="pname" id="name-b">AI</div>
+            <div class="pmeta">Pion Hitam · <span id="hb">9</span> tangan</div>
+          </div>
+          <div class="pcnt" id="ob-b">0</div>
+        </div>
+      </div>
+
+      <!-- Giliran & status -->
+      <div class="box">
+        <div class="turn-banner human" id="turn-banner">✦ GILIRAN ANDA ✦</div>
+        <div class="phase-row">
+          <span class="badge placing" id="phase-badge">Penempatan</span>
+        </div>
+        <div id="status-msg">Tempatkan pion putih.</div>
+      </div>
+
+      <!-- Skor sesi -->
+      <div class="box" id="score-box-left">
+        <div class="box-title">Skor Sesi</div>
+        <div class="score-row">
+          <div><div class="score-num" id="sh">0</div><div class="score-lbl" id="lbl-w">Anda</div></div>
+          <div class="score-sep">—</div>
+          <div><div class="score-num" id="sa">0</div><div class="score-lbl" id="lbl-b">AI</div></div>
+        </div>
+        <div id="game-count">Belum ada permainan selesai</div>
+      </div>
+
+      <!-- Timer seri (muncul saat kedua tersisa 3 pion) -->
+      <div class="box draw-timer-box" id="draw-timer-box" style="display:none">
+        <div class="box-title">⏱ Timer Seri</div>
+        <div class="draw-timer-wrap">
+          <div class="draw-timer-num" id="draw-timer-num">30</div>
+          <div class="draw-timer-bar-wrap">
+            <div class="draw-timer-bar" id="draw-timer-bar"></div>
+          </div>
+          <div class="draw-timer-info" id="draw-timer-info">Countdown seri · 90 detik</div>
+        </div>
+      </div>
+
+      <!-- Riwayat Langkah — mengisi ruang kosong di panel kiri (HvAI) -->
+      <div class="box log-box" id="log-box">
+        <div class="box-title">📜 Riwayat Langkah</div>
+        <div id="move-log"><div class="log-empty">Belum ada langkah.</div></div>
+      </div>
+
+      <!-- Panduan Warna (HvH: tampil di panel kiri) -->
+      <div class="box legend-box" id="legend-box">
+        <div class="box-title">Panduan Warna</div>
+        <div class="leg"><div class="leg-dot" style="background:#4ECDC4"></div>Titik tujuan</div>
+        <div class="leg"><div class="leg-dot" style="background:#FFD700"></div>Dalam Mill</div>
+        <div class="leg"><div class="leg-dot" style="background:#FF6B35"></div>Bisa dihapus</div>
+        <div class="leg"><div class="leg-dot" style="border:2px solid #4ECDC4;background:transparent"></div>Pion dipilih</div>
+      </div>
+
+      <!-- Info Fase HvH — muncul di panel kiri saat HvH untuk isi ruang -->
+      <div class="box hvh-info-box" id="hvh-info-box">
+        <div class="box-title">📋 Fase Permainan</div>
+        <div class="hvh-phase-item" id="hvh-phase-placing">
+          <div class="hvh-phase-dot placing"></div>
+          <div><b>Penempatan</b><div class="hvh-phase-desc">Taruh 9 pion ke titik kosong</div></div>
+        </div>
+        <div class="hvh-phase-item" id="hvh-phase-moving">
+          <div class="hvh-phase-dot moving"></div>
+          <div><b>Pergerakan</b><div class="hvh-phase-desc">Geser pion ke titik terhubung</div></div>
+        </div>
+        <div class="hvh-phase-item" id="hvh-phase-flying">
+          <div class="hvh-phase-dot flying"></div>
+          <div><b>Bebas Gerak</b><div class="hvh-phase-desc">≤ 3 pion: loncat ke mana saja</div></div>
+        </div>
+        <div class="hvh-phase-item" style="margin-top:.4rem">
+          <div class="hvh-phase-dot mill"></div>
+          <div><b>Mill 🔥</b><div class="hvh-phase-desc">3 sejajar → hapus 1 pion lawan</div></div>
+        </div>
+      </div>
+
+    </div><!-- /left-panel -->
+
+    <!-- ────────────────────────────────────────────────────
+         KOLOM TENGAH: papan + game tree
+         ──────────────────────────────────────────────────── -->
+    <div class="center-col">
+      <div class="board-wrap">
+        <canvas id="cvs"></canvas>
+        <div id="ai-thinking">⏳ AI berpikir…</div>
+      </div>
+
+      <!-- Game Tree — hanya HvAI (default hidden, JS yang tampilkan) -->
+      <div class="box tree-box" id="tree-box">
+        <div class="box-title">🌲 Visualisasi Game Tree (3 Level Minimax)</div>
+        <div id="tree-container">
+          <div class="tree-placeholder">Tree muncul setelah AI bergerak pertama kali.</div>
+        </div>
+      </div>
+    </div><!-- /center-col -->
+
+    <!-- ────────────────────────────────────────────────────
+         PANEL KANAN
+         HvAI : pengaturan AI + counter node + legenda + tips
+         HvH  : disembunyikan (class hidden-panel via JS)
+         ──────────────────────────────────────────────────── -->
+    <div class="side-panel right-panel" id="right-panel">
+
+      <!-- Pengaturan AI (Fitur 5, 6) -->
+      <div class="box" id="diff-box">
+        <div class="box-title">⚙ Pengaturan AI</div>
+        <div class="diff-row">
+          <button class="diff-btn" id="g1" onclick="inGameSetDiff(1)">Mudah</button>
+          <button class="diff-btn active" id="g2" onclick="inGameSetDiff(2)">Sedang</button>
+          <button class="diff-btn" id="g3" onclick="inGameSetDiff(3)">Sulit</button>
+        </div>
+        <div class="diff-desc" id="game-diff-desc">Minimax depth 2 · Strategi dasar</div>
+        <div class="toggle-row">
+          <span class="toggle-lbl">Alpha-Beta Pruning</span>
+          <button class="toggle-btn on" id="btn-toggle-ab" onclick="toggleAlphaBeta()">ON</button>
+        </div>
+        <div class="ab-info" id="ab-info">Pemangkasan aktif · lebih efisien</div>
+        <div class="depth-row">
+          <span class="depth-lbl-sm">Depth: <b id="depth-val">2</b></span>
+          <input type="range" id="game-depth-slider" min="1" max="5" value="2"
+                 oninput="inGameSetDepth(+this.value)" class="depth-slider"/>
+          <span class="depth-lbl-sm">5</span>
+        </div>
+      </div>
+
+      <!-- Counter node (Fitur 4) -->
+      <div class="box" id="node-counter-box">
+        <div class="box-title">📊 Evaluasi Node</div>
+        <div class="nc-row">
+          <span class="nc-lbl">Minimax murni</span>
+          <span class="nc-val" id="nc-mm">0</span>
+        </div>
+        <div class="nc-bar-wrap"><div class="nc-bar mm" id="nc-bar-mm" style="width:100%"></div></div>
+        <div class="nc-row">
+          <span class="nc-lbl">Alpha-Beta</span>
+          <span class="nc-val" id="nc-ab">0</span>
+        </div>
+        <div class="nc-bar-wrap"><div class="nc-bar ab" id="nc-bar-ab" style="width:0%"></div></div>
+        <div class="nc-row">
+          <span class="nc-lbl">Dipangkas</span>
+          <span class="nc-val pruned" id="nc-pruned">0 (0%)</span>
+        </div>
+        <div id="nc-info">Menunggu giliran AI…</div>
+      </div>
+
+      <!-- Legenda (HvAI: di kanan) -->
+      <div class="box" id="legend-box-r">
+        <div class="box-title">🎨 Keterangan Warna</div>
+        <div class="leg"><div class="leg-dot" style="background:#4ECDC4"></div>Titik tujuan</div>
+        <div class="leg"><div class="leg-dot" style="background:#FFD700"></div>Dalam Mill</div>
+        <div class="leg"><div class="leg-dot" style="background:#FF6B35"></div>Bisa dihapus</div>
+        <div class="leg"><div class="leg-dot" style="border:2px solid #4ECDC4;background:transparent"></div>Pion dipilih</div>
+      </div>
+
+      <!-- Tips Strategi (HvAI saja) -->
+      <div class="box tip-box" id="tip-box">
+        <div class="box-title">💡 Tips Strategi</div>
+        <div id="tip-text"></div>
+      </div>
+
+      <!-- Skor Sesi — HvH: tampil di kanan -->
+      <div class="box" id="score-box-hvh">
+        <div class="box-title">Skor Sesi</div>
+        <div class="score-row">
+          <div><div class="score-num" id="sh-r">0</div><div class="score-lbl" id="lbl-w-r">Pemain 1</div></div>
+          <div class="score-sep">—</div>
+          <div><div class="score-num" id="sa-r">0</div><div class="score-lbl" id="lbl-b-r">Pemain 2</div></div>
+        </div>
+        <div id="game-count-r">Belum ada permainan selesai</div>
+      </div>
+
+      <!-- Riwayat Langkah — HvH: tampil di kanan -->
+      <div class="box log-box" id="log-box-hvh">
+        <div class="box-title">📜 Riwayat Langkah</div>
+        <div id="move-log-hvh"><div class="log-empty">Belum ada langkah.</div></div>
+      </div>
+
+      <!-- Tips Strategi — HvH saja (rotate tiap giliran) -->
+      <div class="box tip-box" id="tip-box-hvh">
+        <div class="box-title">💡 Tips Strategi</div>
+        <div id="tip-text-hvh"></div>
+      </div>
+
+    </div><!-- /right-panel -->
+
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
+<!-- ID tersembunyi untuk sinkronisasi nama via JS -->
+<span id="lbl-w-hidden" style="display:none">Anda</span>
+<span id="lbl-b-hidden" style="display:none">AI</span>
+
+<script src="script.js"></script>
+</body>
+</html>

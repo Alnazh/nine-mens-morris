@@ -1,0 +1,444 @@
+/* ============================================================
+   style.css — Nine Men's Morris
+   Layout: 100vh penuh, tanpa scroll
+   Panel kiri-papan-kanan: jarak merata, tidak mepet pinggir
+   ============================================================ */
+
+:root {
+  --bg:      #0d0a06;
+  --panel:   rgba(20,13,5,.97);
+  --border:  rgba(196,137,58,.28);
+  --wood:    #8B5E1A;
+  --woodlt:  #C4893A;
+  --accent:  #E8A020;
+  --accent2: #FF6B35;
+  --text:    #F0E0C0;
+  --dim:     #7A6040;
+  --gold:    #FFD700;
+  --teal:    #4ECDC4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg); color: var(--text);
+}
+
+
+/* ══ OVERLAY SCREENS ═════════════════════════════════════════ */
+.screen {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(8,5,2,.93); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center; overflow-y: auto;
+}
+.screen.show { display: flex; }
+
+.modal {
+  background: linear-gradient(160deg, #1f1509, #110c04);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.4rem 2rem; width: min(680px, 94vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,.8);
+  text-align: center;
+}
+.modal h2 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 900; color: var(--accent); letter-spacing: .07em;
+  text-shadow: 0 0 24px rgba(232,160,32,.4); margin-bottom: .15rem;
+}
+.modal-sub {
+  font-size: .72rem; color: var(--dim);
+  letter-spacing: .15em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.mode-row { display: flex; gap: .8rem; justify-content: center; margin-bottom: .9rem; flex-wrap: wrap; }
+.mode-btn {
+  flex: 0 0 auto; min-width: 148px;
+  display: flex; flex-direction: column; align-items: center; gap: .4rem;
+  padding: 1rem 1.4rem .85rem;
+  background: rgba(139,94,26,.12); border: 2px solid rgba(196,137,58,.35);
+  border-radius: 14px; cursor: pointer; transition: all .22s;
+}
+.mode-btn:hover { background: rgba(196,137,58,.18); border-color: var(--accent); transform: translateY(-2px); }
+.mode-btn.selected { border-color: var(--accent); background: rgba(232,160,32,.15); box-shadow: 0 0 16px rgba(232,160,32,.22); }
+.mode-icons { display: flex; align-items: center; gap: .35rem; }
+.mode-icon  { font-size: 1.8rem; line-height: 1; }
+.mode-vs    { font-family: 'Cinzel', serif; font-size: .65rem; font-weight: 700; color: var(--dim); }
+.mode-lbl   { font-family: 'Cinzel', serif; font-size: .76rem; font-weight: 600; color: var(--accent); letter-spacing: .05em; }
+.mode-sub   { font-size: .65rem; color: var(--dim); }
+.diff-label { font-family: 'Cinzel', serif; font-size: .6rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin: .65rem 0 .35rem; }
+.diff-row   { display: flex; gap: .35rem; justify-content: center; }
+.diff-btn {
+  flex: 1; max-width: 100px; padding: .38rem 0;
+  border: 1px solid rgba(196,137,58,.3); background: transparent; color: var(--dim);
+  border-radius: 6px; font-family: 'Crimson Pro', serif; font-size: .85rem; cursor: pointer; transition: all .18s;
+}
+.diff-btn.active, .diff-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,160,32,.08); }
+.diff-desc { font-size: .68rem; color: var(--dim); margin-top: .3rem; }
+#menu-diff-section.hidden { opacity: .3; pointer-events: none; }
+.htp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; text-align: left; margin: .65rem 0 .8rem; }
+.step { display: flex; gap: .6rem; background: rgba(196,137,58,.06); border-radius: 8px; padding: .45rem .7rem; border-left: 3px solid var(--accent); font-size: .8rem; line-height: 1.55; }
+.step-num { font-family: 'Cinzel', serif; font-size: .9rem; font-weight: 700; color: var(--accent); flex-shrink: 0; line-height: 1.4; }
+.step b { color: var(--accent); }
+.btn-primary {
+  display: inline-block; padding: .58rem 1.9rem;
+  background: linear-gradient(135deg, var(--wood), var(--woodlt));
+  border: none; border-radius: 8px; color: #fff;
+  font-family: 'Cinzel', serif; font-size: .85rem; font-weight: 700; letter-spacing: .07em;
+  cursor: pointer; transition: all .2s; box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(232,160,32,.22); }
+.btn-sec {
+  padding: .45rem 1.2rem; border: 1px solid rgba(196,137,58,.35);
+  background: transparent; border-radius: 7px; color: var(--dim);
+  font-family: 'Cinzel', serif; font-size: .73rem; cursor: pointer; transition: all .2s;
+}
+.btn-sec:hover { color: var(--text); border-color: var(--woodlt); }
+.win-btns  { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+.win-icon  { font-size: 2.6rem; margin-bottom: .35rem; }
+.win-title { font-family: 'Cinzel', serif; font-size: clamp(1.2rem,3vw,1.8rem); color: var(--accent); margin-bottom: .25rem; }
+.win-sub   { color: var(--dim); font-size: .88rem; margin-bottom: .2rem; }
+.win-score { font-family: 'Cinzel', serif; font-size: .95rem; color: var(--woodlt); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: .3rem; flex-wrap: wrap; }
+
+
+/* ══ GAME APP FRAME ══════════════════════════════════════════ */
+.app {
+  display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  align-items: center; /* pusatkan app-body secara horizontal */
+}
+
+/* app-header mengisi penuh lebar */
+.app-header {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: .8rem;
+  padding: .28rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.3);
+}
+.app-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.9rem, 2.5vw, 1.4rem);
+  font-weight: 900; color: var(--accent); letter-spacing: .07em;
+  text-shadow: 0 0 20px rgba(232,160,32,.35); white-space: nowrap;
+}
+.toolbar { display: flex; gap: .3rem; flex-shrink: 0; }
+.tb-btn {
+  width: 34px; height: 34px; border-radius: 7px; cursor: pointer;
+  font-size: .95rem; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #6B4418, #3A1E06);
+  border: 2px solid rgba(196,137,58,.5);
+  color: var(--text); transition: all .18s;
+}
+.tb-btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+.tb-btn.muted { color: var(--dim); }
+
+
+/* ══ LAYOUT UTAMA ════════════════════════════════════════════
+   Kunci: padding merata kiri-kanan agar panel tidak mepet pinggir
+   Gap antar kolom sama = padding luar (simetris)
+
+   HvAI: [panel 220px] [gap] [board+tree] [gap] [panel 220px]
+   HvH:  [panel 250px] [gap] [board]      [gap] [panel 185px]
+   ══════════════════════════════════════════════════════════ */
+.app-body {
+  flex: 1; min-height: 0;
+  display: flex;
+  gap: 1rem;
+  overflow: hidden;
+  /* Centering: batasi lebar maksimum dan pusatkan */
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  /* Padding horizontal responsif agar tidak mepet di layar lebar */
+  padding-left:  clamp(1.2rem, 3vw, 3rem);
+  padding-right: clamp(1.2rem, 3vw, 3rem);
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+}
+
+/* Wrapper agar centering bekerja di level .app */
+.app {
+  display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  align-items: stretch;
+}
+
+/* Lebar panel menggunakan angka tetap agar proporsional */
+.app-body.mode-hvai .left-panel  { width: 220px; }
+.app-body.mode-hvai .right-panel { width: 220px; }
+.app-body.mode-hvh  .left-panel  { width: 250px; }
+.app-body.mode-hvh  .right-panel { width: 185px; }
+
+/* Panel: flex column, mengisi penuh tinggi, tidak scroll */
+.side-panel {
+  flex-shrink: 0;
+  display: flex; flex-direction: column; gap: .42rem;
+  overflow: hidden;
+  /* Kotak-kotak di panel tidak stretch vertikal mengisi ruang kosong */
+  align-content: flex-start;
+}
+
+/* Kolom tengah: flex column (board + tree), mengisi sisa lebar */
+.center-col {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: .42rem;
+  overflow: hidden;
+}
+
+/* Papan canvas: mengisi sisa tinggi center-col setelah tree */
+.board-wrap {
+  flex: 1; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+#cvs {
+  display: block;
+  max-width: 100%; max-height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.7), 0 0 40px rgba(139,94,26,.15);
+  cursor: pointer; touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#ai-thinking {
+  display: none; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  background: rgba(10,6,2,.85); border: 1px solid rgba(255,107,53,.4);
+  border-radius: 20px; padding: .22rem .75rem;
+  font-family: 'Cinzel', serif; font-size: .66rem; color: var(--accent2);
+  pointer-events: none; white-space: nowrap;
+}
+#ai-thinking.show { display: block; }
+
+/* Game Tree — tinggi tetap di bawah board */
+.tree-box { flex-shrink: 0; height: 130px; overflow: hidden; }
+#tree-container { height: 100px; overflow: hidden; }
+#tree-container svg { width: 100%; height: 100%; }
+.tree-placeholder { color: var(--dim); font-size: .7rem; text-align: center; padding: .5rem 0; }
+
+
+/* ══ BOX KOMPONEN ════════════════════════════════════════════ */
+.box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 9px; padding: .55rem .7rem; flex-shrink: 0;
+}
+.box-title {
+  font-family: 'Cinzel', serif; font-size: .57rem;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .4rem;
+  padding-bottom: .24rem; border-bottom: 1px solid var(--border);
+}
+
+/* ── Kartu pemain ── */
+.pcard {
+  display: flex; align-items: center; gap: .48rem;
+  padding: .42rem .35rem; border-radius: 7px;
+  border: 1px solid transparent; transition: all .22s;
+  margin-bottom: .25rem;
+}
+.pcard:last-child { margin-bottom: 0; }
+.pcard.active { border-color: var(--accent); background: rgba(232,160,32,.06); }
+.pdisc { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; }
+.pdisc.white { background: radial-gradient(circle at 35% 35%, #fff 0%, #E8DCC8 55%, #9A7040 100%); border: 2px solid var(--woodlt); }
+.pdisc.black { background: radial-gradient(circle at 35% 35%, #6A4422 0%, #2E1A08 55%, #050302 100%); border: 2px solid #5A3A10; }
+.pinfo { flex: 1; min-width: 0; }
+.pname { font-family: 'Cinzel', serif; font-size: .8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pmeta { font-size: .62rem; color: var(--dim); margin-top: .04rem; }
+.pcnt  { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+
+/* ── Turn banner ── */
+.turn-banner {
+  text-align: center; padding: .38rem .35rem; border-radius: 7px;
+  font-family: 'Cinzel', serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .05em; white-space: nowrap; transition: all .3s;
+}
+.turn-banner.human { background: rgba(78,205,196,.12); color: #4ECDC4; border: 1px solid rgba(78,205,196,.4); }
+.turn-banner.ai    { background: rgba(255,107,53,.12); color: var(--accent2); border: 1px solid rgba(255,107,53,.4); }
+.turn-banner.p2    { background: rgba(232,160,32,.12); color: var(--accent); border: 1px solid rgba(232,160,32,.4); }
+.phase-row { text-align: center; margin: .3rem 0 .24rem; }
+.badge { display: inline-block; padding: .15rem .5rem; border-radius: 99px; font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; }
+.badge.placing { color: #4ECDC4; border: 1px solid #4ECDC4; background: rgba(78,205,196,.09); }
+.badge.moving  { color: var(--accent); border: 1px solid var(--accent); background: rgba(232,160,32,.09); }
+.badge.flying  { color: var(--accent2); border: 1px solid var(--accent2); background: rgba(255,107,53,.09); }
+#status-msg { font-size: .75rem; color: var(--text); min-height: 1.6rem; line-height: 1.42; text-align: center; margin-top: .24rem; }
+.hl       { color: var(--gold); font-weight: 600; font-style: italic; }
+.thinking { color: var(--accent2); }
+
+/* ── Skor sesi ── */
+.score-row  { display: flex; justify-content: space-around; align-items: center; padding: .1rem 0; }
+.score-num  { font-family: 'Cinzel', serif; font-size: 1.6rem; color: var(--accent); line-height: 1; text-align: center; }
+.score-sep  { color: var(--dim); font-size: .9rem; }
+.score-lbl  { font-size: .6rem; color: var(--dim); text-align: center; margin-top: .12rem; }
+#game-count, #game-count-r { font-size: .5rem; color: var(--dim); text-align: center; margin-top: .24rem; opacity: .75; }
+
+/* ── Timer seri ── */
+.draw-timer-wrap   { display: flex; flex-direction: column; align-items: center; gap: .32rem; }
+.draw-timer-num    { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 900; color: var(--accent2); line-height: 1; }
+.draw-timer-bar-wrap { width: 100%; height: 5px; background: rgba(255,107,53,.2); border-radius: 3px; overflow: hidden; }
+.draw-timer-bar    { height: 100%; background: var(--accent2); border-radius: 3px; transition: width 1s linear; }
+.draw-timer-info   { font-size: .6rem; color: var(--dim); text-align: center; line-height: 1.4; }
+.draw-timer-num.warn { color: var(--gold); animation: timerPulse .6s infinite; }
+.draw-timer-bar.warn { background: var(--gold); }
+@keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── Riwayat Langkah (mengisi sisa ruang panel kiri) ── */
+.log-box { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#move-log { flex: 1; overflow-y: auto; font-size: .68rem; color: var(--dim); display: flex; flex-direction: column; gap: .15rem; }
+#move-log::-webkit-scrollbar { width: 4px; }
+#move-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.log-empty { text-align: center; padding: .5rem 0; opacity: .6; }
+.log-row { display: flex; justify-content: space-between; gap: .4rem; padding: .12rem .3rem; border-radius: 4px; }
+.log-row:nth-child(odd) { background: rgba(255,255,255,.03); }
+.log-row .lg-w { color: var(--accent2); }
+.log-row .lg-b { color: var(--accent); }
+
+.app-body.mode-hvh #log-box { display: none !important; }
+
+.leg     { display: flex; align-items: center; gap: .4rem; font-size: .7rem; color: var(--dim); margin-bottom: .28rem; }
+.leg:last-child { margin-bottom: 0; }
+.leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Pengaturan AI ── */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin-top: .52rem; }
+.toggle-lbl { font-size: .72rem; color: var(--text); }
+.toggle-btn {
+  padding: .2rem .62rem; border-radius: 5px; font-family: 'Cinzel', serif;
+  font-size: .68rem; font-weight: 700; cursor: pointer; transition: all .18s;
+  border: 1px solid var(--border); background: transparent; color: var(--dim);
+}
+.toggle-btn.on { border-color: var(--teal); color: var(--teal); background: rgba(78,205,196,.1); }
+.ab-info { font-size: .62rem; color: var(--dim); margin-top: .22rem; }
+.depth-row { display: flex; align-items: center; gap: .32rem; margin-top: .44rem; }
+.depth-lbl-sm { font-size: .66rem; color: var(--dim); flex-shrink: 0; }
+.depth-lbl-sm b { color: var(--accent); }
+.depth-slider { flex: 1; accent-color: var(--accent); height: 3px; cursor: pointer; }
+
+/* ── Node counter ── */
+.nc-row { display: flex; align-items: center; justify-content: space-between; padding: .22rem 0; }
+.nc-lbl { font-size: .65rem; color: var(--dim); }
+.nc-val { font-family: 'Cinzel', serif; font-size: .9rem; font-weight: 700; color: var(--accent); }
+.nc-val.pruned { color: var(--teal); }
+.nc-bar-wrap { height: 4px; background: rgba(196,137,58,.15); border-radius: 2px; margin: .1rem 0; overflow: hidden; }
+.nc-bar { height: 100%; border-radius: 2px; transition: width .5s; }
+.nc-bar.mm { background: var(--accent2); }
+.nc-bar.ab { background: var(--teal); }
+#nc-info { font-size: .6rem; color: var(--dim); text-align: center; margin-top: .26rem; font-style: italic; }
+
+/* ── Tips ── */
+.tip-box { flex-shrink: 0; }
+#tip-text { font-size: .72rem; color: var(--dim); line-height: 1.62; }
+
+/* Animasi umum */
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+.anim-pulse { animation: pulse .9s infinite; }
+
+
+/* ══ KONTROL VISIBILITAS PER MODE ════════════════════════════
+
+   HvAI (.mode-hvai):
+     Kiri  → pemain, giliran, skor, timer
+     Kanan → AI settings, counter, LEGENDA, tips
+     (legend-box di kiri disembunyikan)
+
+   HvH (.mode-hvh):
+     Kiri  → pemain, giliran, skor, timer, PANDUAN (legenda di kiri)
+     Kanan → tips strategi saja
+     (semua panel AI + tree disembunyikan)
+
+   ══════════════════════════════════════════════════════════ */
+
+/* HvAI: legenda di kanan, bukan kiri */
+.app-body.mode-hvai #legend-box    { display: none !important; }
+.app-body.mode-hvai #legend-box-r  { display: block; }
+.app-body.mode-hvai #tip-box       { display: block; }
+
+/* HvH: sembunyikan semua elemen khusus AI */
+.app-body.mode-hvh  #diff-box          { display: none !important; }
+.app-body.mode-hvh  #node-counter-box  { display: none !important; }
+.app-body.mode-hvh  #tree-box          { display: none !important; }
+.app-body.mode-hvh  #ai-thinking       { display: none !important; }
+.app-body.mode-hvh  #legend-box-r      { display: none !important; }
+.app-body.mode-hvh  #tip-box           { display: none !important; }
+
+/* HvAI: node-counter-box default tampil (nilai awal 0) */
+.app-body.mode-hvai #node-counter-box  { display: block; }
+/* HvH: sembunyikan skor & legenda dari panel kiri (dipindah ke kanan) */
+.app-body.mode-hvh  #legend-box        { display: none !important; }
+.app-body.mode-hvh  #score-box-left    { display: none !important; }
+
+/* HvH: tampilkan kotak khusus di panel kanan */
+.app-body.mode-hvh  #score-box-hvh     { display: block; }
+.app-body.mode-hvh  #log-box-hvh       { display: flex; flex-direction: column; flex: 1; min-height: 80px; }
+.app-body.mode-hvh  #tip-box-hvh       { display: block; }
+
+/* Sembunyikan kotak HvH saat HvAI */
+#score-box-hvh  { display: none; }
+#log-box-hvh    { display: none; }
+#tip-box-hvh    { display: none; }
+
+/* HvH: tip list semua tips */
+#tip-list-hvh   { display: flex; flex-direction: column; gap: .35rem; }
+.tip-item-hvh   { font-size: .7rem; color: var(--dim); line-height: 1.55; padding: .28rem .4rem;
+                  border-left: 2px solid var(--accent2); background: rgba(196,137,58,.06); border-radius: 0 4px 4px 0; }
+
+/* HvH tip-box-hvh pakai style sama seperti HvAI tip-box */
+#tip-box-hvh #tip-text-hvh { font-size: .72rem; color: var(--dim); line-height: 1.62; }
+
+/* HvH: Info Fase (panel kiri, isi ruang kosong) */
+.hvh-info-box { flex-shrink: 0; }
+.hvh-phase-item {
+  display: flex; align-items: flex-start; gap: .5rem;
+  padding: .3rem 0; border-bottom: 1px solid rgba(196,137,58,.1); font-size: .73rem; color: var(--text);
+}
+.hvh-phase-item:last-child { border-bottom: none; }
+.hvh-phase-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: .22rem;
+}
+.hvh-phase-dot.placing { background: #4ECDC4; }
+.hvh-phase-dot.moving  { background: var(--accent); }
+.hvh-phase-dot.flying  { background: var(--accent2); }
+.hvh-phase-dot.mill    { background: var(--gold); }
+.hvh-phase-desc { font-size: .63rem; color: var(--dim); margin-top: .08rem; line-height: 1.4; }
+.hvh-phase-item b { color: var(--accent); }
+
+/* HvH: hvh-info-box hanya tampil saat HvH */
+#hvh-info-box { display: none; }
+.app-body.mode-hvh #hvh-info-box { display: block; }
+
+/* HvH: move-log-hvh */
+#move-log-hvh { flex: 1; overflow-y: auto; font-size: .68rem; color: var(--dim); display: flex; flex-direction: column; gap: .15rem; }
+#move-log-hvh::-webkit-scrollbar { width: 4px; }
+#move-log-hvh::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+
+/* ══ MOBILE ══════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  html, body { height: auto; overflow: auto; overflow-x: hidden; }
+  .app { height: auto; min-height: 100vh; overflow: visible; }
+
+  .app-body {
+    flex-direction: column; overflow: visible;
+    padding: .3rem; gap: .35rem;
+  }
+  .app-body.mode-hvai .left-panel,
+  .app-body.mode-hvh  .left-panel,
+  .app-body.mode-hvai .right-panel,
+  .app-body.mode-hvh  .right-panel { width: 100%; }
+
+  .center-col  { order: 1; }
+  .left-panel  { order: 2; display: grid; grid-template-columns: 1fr 1fr; }
+  .right-panel { order: 3; display: grid; grid-template-columns: 1fr 1fr; }
+
+  .left-panel  .box:first-child { grid-column: 1 / -1; }
+  #draw-timer-box                { grid-column: 1 / -1; }
+  #diff-box                      { grid-column: 1 / -1; }
+  #node-counter-box              { grid-column: 1 / -1; }
+
+  .board-wrap { height: min(82vw, 420px); }
+  .tree-box   { height: 108px; }
+  #tree-container { height: 76px; }
+  .htp-grid   { grid-template-columns: 1fr; }
+  .mode-btn   { min-width: 125px; }
+}
