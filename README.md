@@ -1,7 +1,7 @@
 # Nine Men's Morris — Adversarial Search (AI)
 
 > Implementasi mandiri **Minimax + Alpha-Beta Pruning** (from scratch, tanpa library)  
-> Mata Kuliah Kecerdasan Buatan — S1 Teknik Informatika
+> Mata Kuliah Kecerdasan Buatan - S1 Teknik Informatika
 
 ## 🎮 Demo
 🔗 **Live:** `https://ninemensmorris.my.id/` *(ganti setelah deploy)*  
