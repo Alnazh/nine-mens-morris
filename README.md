@@ -118,3 +118,10 @@ function minimax(state, depth, α, β, isMaximizer):
 | 4     | ~6.561         | ~380              | ~94%      |
 
 *Angka aktual ditampilkan live di panel kanan aplikasi.*
+
+---
+
+## Screenshots
+
+### Tampilan Utama
+![Main Interface](screenshots/main-interface.png)
