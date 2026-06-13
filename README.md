@@ -4,7 +4,7 @@
 > Mata Kuliah Kecerdasan Buatan — S1 Teknik Informatika
 
 ## 🎮 Demo
-🔗 **Live:** `https://namaanda.my.id` *(ganti setelah deploy)*  
+🔗 **Live:** `https://ninemensmorris.my.id/` *(ganti setelah deploy)*  
 📂 **GitHub:** `https://github.com/Alnazh/nine-mens-morris`
 
 ---
@@ -29,10 +29,11 @@
 
 ```
 nine-mens-morris/
-├── index.html   # Struktur HTML & layout UI (239 baris)
-├── style.css    # Gaya visual & responsivitas (338 baris)
-├── script.js    # Logika game + Minimax + Alpha-Beta (881 baris)
-└── README.md    # Dokumentasi ini
+├── index.html          # Struktur HTML & layout UI (239 baris)
+├── main-interface.png  # Screenshot tampilan aplikasi
+├── style.css           # Gaya visual & responsivitas (338 baris)
+├── script.js           # Logika game + Minimax + Alpha-Beta (881 baris)
+└── README.md           # Dokumentasi ini
 ```
 
 ---
@@ -124,4 +125,4 @@ function minimax(state, depth, α, β, isMaximizer):
 ## Screenshots
 
 ### Tampilan Utama
-![Main Interface](screenshots/main-interface.png)
+![Main Interface](main-interface.png)
